@@ -71,7 +71,7 @@ def update_student(std_id):
     finally:
         client.close()
 @app.route("/students/<int:std_id>", methods=["DELETE"])
-def update_student(std_id):
+def delete_student(std_id):
     try:
         client = get_mongo_client()
         db = client.students
