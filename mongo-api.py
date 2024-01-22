@@ -8,18 +8,33 @@ uri = "mongodb+srv://User:DGb7LCLWDAWGuc95@cluster0.kqhyq1c.mongodb.net/?retryWr
 def hello_world():
     return "<center><p>Welcome to Student Management API </p></center>"
 
-@app.route("/student",methods=["GET"])
+@app.route("/student", methods=["GET"])
 def show_all_student():
     try:
         client = MongoClient(uri)
         db = client.students
         collection = db.std_info
         all_students = list(collection.find())
-        client.close() 
         return jsonify(all_students)
     except Exception as e:
         return jsonify({"error": str(e)})
+    finally:
+        client.close()
 
+@app.route("/student/<int:std_id>", methods=["GET"])
+def get_student_by_id(std_id):
+    try:
+        client = MongoClient(uri)
+        db = client.students
+        collection = db.std_info
+        std = collection.find_one({"_id": str(std_id)})
+        if not std:
+            return jsonify({"error": "Student not found"}), 404
+        return jsonify(std)
+    except Exception as e:
+        return jsonify({"error": str(e)})
+    finally:
+        client.close()
 
 
 
