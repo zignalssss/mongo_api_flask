@@ -54,6 +54,37 @@ def add_std():
         return jsonify({"error": str(e)})
     finally:
         client.close()
+@app.route("/students/<int:std_id>", methods=["PUT"])
+def update_student(std_id):
+    try:
+        client = get_mongo_client()
+        db = client.students
+        collection = db.std_info
+        data = request.get_json()
+        std_data = collection.find_one({"_id": str(std_id)})
+        if not std_data:
+            return jsonify({"error":"Student not found"}), 404
+        collection.update_one({"_id":str(std_id)}, {"$set": data})
+        return jsonify(data), 200
+    except Exception as e:
+        return jsonify({"error": str(e)})
+    finally:
+        client.close()
+@app.route("/students/<int:std_id>", methods=["DELETE"])
+def update_student(std_id):
+    try:
+        client = get_mongo_client()
+        db = client.students
+        collection = db.std_info
+        std_data = collection.find_one({"_id": str(std_id)})
+        if not std_data:
+            return jsonify({"error":"Student not found"}), 404
+        collection.delete_one({"_id": std_id})
+        return jsonify({"message":"Student deleted successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)})
+    finally:
+        client.close()
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0",port=5000,debug=True)
