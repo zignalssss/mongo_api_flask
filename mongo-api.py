@@ -4,14 +4,17 @@ from flask import Flask,jsonify,request
 app = Flask(__name__)
 uri = "mongodb+srv://User:DGb7LCLWDAWGuc95@cluster0.kqhyq1c.mongodb.net/?retryWrites=true&w=majority"
 
+def get_mongo_client():
+    return MongoClient(uri)
+
 @app.route("/")
 def hello_world():
     return "<center><p>Welcome to Student Management API </p></center>"
 
-@app.route("/student", methods=["GET"])
+@app.route("/students", methods=["GET"])
 def show_all_student():
     try:
-        client = MongoClient(uri)
+        client = get_mongo_client()
         db = client.students
         collection = db.std_info
         all_students = list(collection.find())
@@ -21,10 +24,10 @@ def show_all_student():
     finally:
         client.close()
 
-@app.route("/student/<int:std_id>", methods=["GET"])
+@app.route("/students/<int:std_id>", methods=["GET"])
 def get_student_by_id(std_id):
     try:
-        client = MongoClient(uri)
+        client = get_mongo_client()
         db = client.students
         collection = db.std_info
         std = collection.find_one({"_id": str(std_id)})
@@ -35,9 +38,22 @@ def get_student_by_id(std_id):
         return jsonify({"error": str(e)})
     finally:
         client.close()
-
-
-
+@app.route("/students", methods=["POST"])
+def add_std():
+    try:
+        client = get_mongo_client()
+        db = client.students
+        collection = db.std_info
+        data = request.get_json()
+        already_data = collection.find_one({"_id": data.get("_id")})
+        if already_data:
+            return jsonify({"error":"Cannot create new student"}), 500
+        collection.insert_one(data)
+        return jsonify(data), 200
+    except Exception as e:
+        return jsonify({"error": str(e)})
+    finally:
+        client.close()
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0",port=5000,debug=True)
